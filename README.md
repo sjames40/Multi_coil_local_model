@@ -27,18 +27,23 @@ two_channel_dataset_test specifies the data loader for MRI image loading from
 multicoil MR measurements.
 
 Unet mri local model can be used for local and global model training and testing
-reconstruction from undersampled multi-coil k-space measurements using UNet
+reconstruction from undersampled single-coil k-space measurements using UNet
 training.
 
-`SOUPDIL.m` is the inner dictionary learning and sparse coding function that
-takes overlapping patches in an initial image and learns a dictionary and a set
-of sparse coefficients to represent these patches.
+Unet mri  model multi can be used for local and global model training and
+testing  reconstruction from undersampled multi-coil k-space measurements using
+UNet training.
 
-Deep Supervised Learning-based Image Reconstruction
----------------------------------------------------
+data_consistance_loss file which is the main file that train the modl network.
 
-The supervised learning approach used a training set generated from the [fastMRI
-project](https://fastmri.org/). \* `Preprocessing.ipynb` provides an example of
-the data-preprocessing. \* `MODL_DLMRI_Knee_vd.sh` gives an example of training
-the neural network. \* The file `requirements.txt` denotes related Python
-packages.
+The data loader of the that code is the two channel data consistance for modl
+code.
+
+make two channel data consistance file to make the original data for modl model
+f
+
+ 
+-
+
+The file `requirements.txt` denotes related Python packages.
+------------------------------------------------------------
