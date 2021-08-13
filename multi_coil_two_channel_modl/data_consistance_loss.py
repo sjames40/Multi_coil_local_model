@@ -62,9 +62,10 @@ def CG(output, tol ,L, smap, mask, alised_image):
 
 def NormalizeData2(data):
     return data / torch.max(torch.abs(data))
+train_loss= []
 
 
-for epoch in range(1):
+for epoch in range(600):
     loss_G_train = 0
 
     for direct, target,smap,mask in two_channel_dataset_data_consistance.train_loader:
@@ -74,15 +75,18 @@ for epoch in range(1):
         # input =torch.abs(input)
         smap = smap.to(device).float()
         mask = mask.to(device).float()
+        #print(mask.shape)
         label = target.to(device).float()
-        output = netG(input)
+        #output = netG(input)
         # print(output.shape)
-        result = CG(output, tol =0.00005,L= 1, smap=smap, mask= mask, alised_image= input)
+        for ii in range(6):
+            output = netG(input)
+            output = CG(output, tol =0.00005,L= 1, smap=smap, mask= mask, alised_image= input)
+         
 
-        
+            
         #print(output.shape) 
        # print(result)
-
         # backward netG
         optimG.zero_grad()
         # if bfov: loss_G = fn(output * mask, label * mask)
@@ -92,7 +96,14 @@ for epoch in range(1):
         optimG.step()
         loss_G_train += loss_G.item()  # torch.norm(label-output)/torch.norm(label)
 
-        
+    train_loss.append(loss_G_train)
+    #vali_loss.append(val_loss.item())
+    #print('V Loss', val_loss.item())
+    print(loss_G_train)
+    print(epoch)
+
+    
+    
         
         
 

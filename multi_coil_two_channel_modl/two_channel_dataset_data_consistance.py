@@ -132,8 +132,9 @@ class nyumultidataset(Dataset):
         SOS_mask = torch.sum(complex_matmul(A_I_mask, complex_conj(A_s)), dim=0)
         # print('sossize',SOS.size())
         A_I_mask = SOS_mask / torch.max(torch.abs(SOS_mask)[:])
-        mask_two_channel = mask_two_channel[:, :, nx // 2 - 160:nx // 2 + 160, ny // 2 - 160:ny // 2 + 160]
-        return  A_I_mask, A_I,A_s,mask_two_channel
+        mask = mask[:, nx // 2 - 160:nx // 2 + 160, ny // 2 - 160:ny // 2 + 160]
+        
+        return  A_I_mask, A_I,A_s,mask
      
        
     def __len__(self):
@@ -145,7 +146,7 @@ len_data = len(kspace_data)
 train_size = 0.9
 num_train = int(len_data*train_size)
     
-test_clean_paths = kspace_data[num_train:]
+test_clean_paths = kspace_data[:num_train]
 train_dataset = nyumultidataset(test_clean_paths)
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=1,shuffle=True)
 #for direct, target in train_loader:
