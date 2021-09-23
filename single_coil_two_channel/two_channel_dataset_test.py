@@ -35,7 +35,12 @@ count =0
 kspace_data_name = '/home/liangs16/MRI_descattering/RC_Image_4_fold_2channel/'
 kspace_data = []
 kspace_array = os.listdir(kspace_data_name)
+kspace_array.sort()
 print(len(kspace_array)*0.95)
+for i in range(len(kspace_array)):
+    kspace_file = kspace_array[i]
+    kspace_data_from_file = np.load(os.path.join(kspace_data_name,kspace_file),'r')
+    kspace_data.append(kspace_data_from_file)
 
 
 def center_crop(data, shape):
@@ -98,7 +103,9 @@ class nyumultidataset(Dataset):
         #A_I = A_I[:, nx//2-nx//2:nx//2+nx//2,ny//2-ny//2:ny//2+ny//2]
         #A_I_mask = A_I_mask[:, nx//2-nx//2:nx//2+nx//2,ny//2-ny//2:ny//2+ny//2]
         A_I_crop = center_crop(A_I, (320,320))
+        A_I_crop = A_I_crop/ torch.max(torch.abs(A_I_crop))
         A_I_mask_crop = center_crop(A_I_mask, (320,320))
+        A_I_mask_crop = A_I_mask_crop/ torch.max(torch.abs(A_I_mask_crop))
         mask = center_crop(mask,(320,320))
         return  A_I_mask_crop, A_I_crop,mask
     def __len__(self):
@@ -106,9 +113,13 @@ class nyumultidataset(Dataset):
 train_size = 0.95
 len_data = len(kspace_data) 
 num_train = int(len_data*train_size) 
-train_dataset = nyumultidataset(clean_data1)
+train_data_paths = kspace_data[:np.int(num_train)]
+train_dataset = nyumultidataset(train_data_paths)
 
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=2,shuffle=True)
+test_data_paths = kspace_data[np.int(num_train):np.int(num_train)+10]
+test_dataset = nyumultidataset(test_data_paths)
+test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=2,shuffle=True)
 
 #for direct, target in train_loader:
     #np.save(os.path.join('..','MRI_descattering','Test_image','1181_simliar_neig_2channel.npy'),direct.detach().numpy())

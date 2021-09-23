@@ -13,7 +13,7 @@ from util.util import generate_mask_alpha, generate_mask_beta
 import scipy.ndimage
 from util.util import fft2, ifft2,ifft2_mask, cplx_to_tensor, complex_conj, complex_matmul, absolute
 from torch.nn import init
-
+from models import networks
 def init_weights(net, init_type='normal', init_gain=0.02):
     def init_func(m):  # define the initialization function
         classname = m.__class__.__name__
@@ -36,7 +36,8 @@ def init_weights(net, init_type='normal', init_gain=0.02):
 
     print('initialize network with %s' % init_type)
     net.apply(init_func)  # apply the initialization function <init_func>
-
+def CG(output, tol ,L, smap, mask, alised_image):
+    return networks.CG.apply(output, tol ,L, smap, mask, alised_image)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 netG =Unet(2,2, num_pool_layers=4, chans=64).to(device)
 init_weights(netG, init_type='normal',init_gain=0.02)
@@ -51,13 +52,14 @@ vali_loss =[]
 
 for epoch in range(600):
     loss_G_train = 0
+    vali_g_train = 0
     for direct, target,mask in two_channel_dataset_test.train_loader:
         input = direct.to(device).float()
-        input = NormalizeData2(input)
+        #input = NormalizeData2(input)
         label = target.to(device).float()
-        label = NormalizeData2(label)
+        #label = NormalizeData2(label)
         mask = mask.to(device).float()
-        smap = torch.ones(label.shape)
+        smap = torch.ones(label.shape).unsequeeze()
         temp = input
         for ii in range(6):
             output = netG(temp)
@@ -75,20 +77,24 @@ for epoch in range(600):
             val_pred = netG(vali_input)
             vali_temp = vali_input
             vali_mask = vali_mask.to(device).float()
-            vali_smap = torch.ones(vali_input.shape)
+            vali_smap = torch.ones(vali_input.shape).unsequeez()
             for ii in range(6):
                 vali_output = netG(vali_input)
                 vali_output2 = CG(vali_output, tol=0.00005, L=1, smap=vali_smap, mask=vali_mask, alised_image=vali_input)
             vali_temp = vali_output2
             vali_target = vali_target.to(device).float()    
             val_loss = fn(vali_temp, vali_target)
-
+         vali_g_train += val_loss.item() 
     train_loss.append(loss_G_train)
     vali_loss.append(val_loss.item())
     print('V Loss', val_loss.item())
     print(loss_G_train)
     print(epoch)
 
+
+    
+
+    
     
     
     
