@@ -25,28 +25,6 @@ for i in os.listdir():
         foldername.append(i)
 foldername.sort()
 
-
-def smap(filename):
-    aim = 'DESTINATION'
-    hf = h5py.File(filename)
-    kspace = hf['kspace'][()]
-    num_layers, num_coils, nx, ny = kspace.shape
-    kmax = np.amax(np.abs(kspace[:]))
-    for i in range(num_layers):
-        k = kspace[i,:,:,:]
-        k_r = (np.real(k)/kmax*32767).astype('int16') # save memory, should be consistent with your dataloader!
-        k_i = (np.imag(k)/kmax*32767).astype('int16')
-        k = np.expand_dims(k, axis=0)
-        k = np.transpose(k,(2,3,0,1))
-        try:
-            sens_maps = mr.app.EspiritCalib(k).run()
-        except:
-            print('oops')
-            continue
-        sens_map = sens_maps.squeeze().transpose((2,0,1))
-        s_r = (np.real(sens_map)*32767).astype('int16')
-        s_i = (np.imag(sens_map)*32767).astype('int16')
-        np.savez(os.path.join(aim,'%s_Layer%d.npz'%(filename,i)),s_r=s_r,s_i=s_i,k_r=k_r,k_i=k_i)
 arr = os.listdir(rt)
 count =0
 for i in range(30,40):#Lines: #len(arr)#15.20
