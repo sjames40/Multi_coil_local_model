@@ -11,10 +11,7 @@ import scipy.io as sio
 # import ReadWrapper
 from torch.utils.data.dataset import Dataset
 from torch.nn import init
-import math
-import scipy
-import scipy.linalg
-import h5py
+
 import sys
 import os
 import torch
@@ -26,7 +23,6 @@ import scipy.io as sp
 from util.util import generate_mask_alpha, generate_mask_beta
 import scipy.ndimage
 from util.util import fft2, ifft2, cplx_to_tensor, complex_conj, complex_matmul, absolute
-import h5py
 from models import networks
 
 
