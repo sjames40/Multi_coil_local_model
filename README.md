@@ -23,24 +23,20 @@ based on the modification form https://github.com/JeffFessler/BLIPSrecon
 
  
 
-two_channel_dataset_test specifies the data loader for MRI image loading from
-multicoil MR measurements.
+global dataset  specifies the data loader for MRI image loading from
+multicoil MR measurements for global case.
 
-Unet mri local model can be used for local and global model training and testing
-reconstruction from undersampled single-coil k-space measurements using UNet
+local network dataset and local netowrk dataset oracle specifies the data loader for MRI image loading from
+multicoil MR measurements for noise local case and oracle local case.
+
+
+train local unet  can be used for local  model training and testing
+reconstruction from undersampled mulit-coil k-space measurements using UNet
 training.
 
-Unet mri  model multi can be used for local and global model training and
-testing  reconstruction from undersampled multi-coil k-space measurements using
-UNet training.
-
-data_consistance_loss file which is the main file that train the modl network.
-
-The data loader of the that code is the two channel data consistance for modl
-code.
-
-make two channel data consistance file to make the original data for modl model
-f
+transfer learning local network  can be used for local  model training and testing
+reconstruction from undersampled mulit-coil k-space measurements using DIDN
+training.
 
  
 -
