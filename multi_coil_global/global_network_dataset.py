@@ -33,63 +33,42 @@ from models import networks
 
 
 #rt = '/home/liangs16/shared_data/mulitcoil_half'
-Kspace_data_name = '/mnt/DataA/MRI_sampling/NEW_8_fold'
-Kspace_data_name3 = '/mnt/DataA/NEW_KSPACE'
+Kspace_data_name = '/mnt/DataA/NEW_KSPACE'
 kspace_data = []
-file = np.load(os.path.join('/mnt/DataA/MRI_sampling/file_list.npy'))
-kspace_array = os.listdir(Kspace_data_name3)
+kspace_array = os.listdir(Kspace_data_name)
 kspace_array = sorted(kspace_array)
-kspace_array2 = os.listdir(Kspace_data_name)
-print(kspace_array2[1081])
 
-clean_data1 = []
-vali_data1 = []
+image_space_data=[]
 
 ##LOading the kspace data of size (sentive_map_real(coil,channel,size,size),sentive_map_img(coil,channel,size,size), kspace_real(coil,channel,size,size),kspace_img(coil,channel,size,size))
-
-for i in range(1000): 
-    kspace_file = file[i]
+for j in range(len(kspace_array)): 
+    kspace_file = kspace_array[j]
     kspace_data_from_file = np.load(os.path.join(Kspace_data_name,kspace_file),'r')
-    if kspace_data_from_file['k_r'].shape[2]<373:
-        clean_data1.append(kspace_data_from_file)
-for j in range(1000): 
-    kspace_file_other = kspace_array[j]
-    kspace_data_from_file_other = np.load(os.path.join(Kspace_data_name3,kspace_file_other),'r')
-    if kspace_data_from_file_other['k_r'].shape[2]<373 and kspace_data_from_file_other['k_r'].shape[2]>367:
-        clean_data1.append(kspace_data_from_file_other)
-for h in range(1074,1084):
-    kspace_file_vali = file[h]
-    kspace_vali_data_from_file = np.load(os.path.join(Kspace_data_name,kspace_file_vali),'r')
-    if kspace_vali_data_from_file['k_r'].shape[2]<373:
-        vali_data1.append(kspace_vali_data_from_file)
-
+    if kspace_data_from_file['k_r'].shape[2]<373 and kspace_data_from_file['k_r'].shape[2]>367:
+        image_space_data.append(kspace_data_from_file)
                       
 mask_data_name = '/mnt/DataA/MRI_sampling/4_accerlation_mask'
 mask_array = os.listdir(mask_data_name)
 mask_array = sorted(mask_array)
-mask_file = mask_array[1081]
+mask_file = mask_array[0] # mask shape would be 640 368
 mask_from_file = np.load(os.path.join(mask_data_name,mask_file),'r')
 mask_data_selet = []
 mask_vali = []
-for e in range(len(clean_data1)):
-    if clean_data1[e]['k_r'].shape[2]> 368:
-        mask_data_selet.append(np.pad(mask_from_file, ((0, 0), (2, 2)), 'constant'))
+for e in range(len(image_space_data)):
+    if image_space_data[e]['k_r'].shape[2]> 368:
+        mask_data_select.append(np.pad(mask_from_file, ((0, 0), (2, 2)), 'constant'))
     else:
-        mask_data_selet.append(mask_from_file)
-for k in range(len(vali_data1)):
-    if vali_data1[k]['k_r'].shape[2]> 368:
-        mask_vali.append(np.pad(mask_from_file, ((0, 0), (2, 2)), 'constant'))
-    else:
-        mask_vali.append(mask_from_file)
+        mask_data_select.append(mask_from_file)
+
 
 
 class nyumultidataset(Dataset): # model data loader
     def  __init__(self ,kspace_data,mask_data):
         self.A_paths = kspace_data
-        #self.A_paths = sorted(self.A_paths)
+        self.A_paths = sorted(self.A_paths)
         self.A_size = len(self.A_paths)
         self.mask_path = mask_data
-        #self.mask_path =sorted(self.mask_path)
+        self.mask_path =sorted(self.mask_path)
         self.nx = 640
         self.ny = 368
 
@@ -127,13 +106,13 @@ len_data = len(clean_data1)
 
 train_size = 0.9
 num_train = 3000
-    
-train_clean_paths = clean_data1[:num_train]
-mask_data_paths =mask_data_selet[:num_train]
+number_of_test =15    
+train_clean_paths = image_space_data[:num_train]
+mask_data_paths =mask_data_select[:num_train]
 train_dataset = nyumultidataset(train_clean_paths,mask_data_paths)
 train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=1,shuffle=True)
-test_clean_paths = vali_data1 #1090
-mask_test_paths = mask_vali
+test_clean_paths = image_space_data[num_train:num_train+number_of_test]
+mask_test_paths = mask_data_select[num_train:num_train+number_of_test]
 test_dataset = nyumultidataset(test_clean_paths,mask_test_paths)
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=1,shuffle=False)
 
