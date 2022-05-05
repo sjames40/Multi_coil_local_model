@@ -1,13 +1,9 @@
 import torch
-
 import torch.nn as nn
 import torch.nn.functional as F
-#import dataset2
-import numpy as np
-from Unet_model_fast_mri import Unet
 import two_channel_dataset_test
 import numpy as np
-#from Unet_model_fast_mri import Unet
+from Unet_model_fast_mri import Unet,UNet
 from data.base_dataset import BaseDataset, get_transform
 from data.image_folder import make_dataset
 from PIL import Image
@@ -15,9 +11,9 @@ import random
 import scipy.io as sp
 from util.util import generate_mask_alpha, generate_mask_beta
 import scipy.ndimage
-from util.util import fft2, ifft2, cplx_to_tensor, complex_conj, complex_matmul, absolute
+from util.util import fft2, ifft2,ifft2_mask, cplx_to_tensor, complex_conj, complex_matmul, absolute
 from torch.nn import init
-
+from models import networks
 def init_weights(net, init_type='normal', init_gain=0.02):
     def init_func(m):  # define the initialization function
         classname = m.__class__.__name__
@@ -40,88 +36,103 @@ def init_weights(net, init_type='normal', init_gain=0.02):
 
     print('initialize network with %s' % init_type)
     net.apply(init_func)  # apply the initialization function <init_func>
-
-
-    
-    
+def CG(output, tol ,L, smap, mask, alised_image):
+    return networks.CG.apply(output, tol ,L, smap, mask, alised_image)
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-#netG = Unet(in_chans=2,
-#            out_chans=2).to(device)
-netG =Unet(2,2, num_pool_layers=2, chans=32).to(device)
-#netG = UNet().to(device)
+netG =Unet(2,2, num_pool_layers=4, chans=64).to(device)
 init_weights(netG, init_type='normal',init_gain=0.02)
-netG = netG.float()
 norm =  nn.L1Loss().to(device)
-#tst=torch.zeros(nEpochs)
-#vtst=torch.zeros(nEpochs)
 # Loss and optimizer
-learning_rate = 7e-5
+learning_rate = 4e-5
 loss_G = nn.MSELoss()
 fn = nn.MSELoss().to(device)
 optimG = torch.optim.Adam(netG.parameters(), lr=learning_rate)
 train_loss =[]
 vali_loss =[]
-def NormalizeData2(data):
-    return data/torch.max(torch.abs(data))
 
-for epoch in range(500):
+for epoch in range(600):
     loss_G_train = 0
-    for direct, target in two_channel_dataset_test.train_loader:
+    vali_g_train = 0
+    for direct, target,mask in two_channel_dataset_test.train_loader:
         input = direct.to(device).float()
-        # print(input.shape)
-        #input = NormalizeData2(input) 
-         # input =torch.abs(input)
+        #input = NormalizeData2(input)
         label = target.to(device).float()
         #label = NormalizeData2(label)
-        output = netG(input)
-        # print(output.shape)    
-
-         # backward netG
+        mask = mask.to(device).float()
+        smap = torch.ones(label.shape).unsequeeze()
+        temp = input
+        for ii in range(6):
+            output = netG(temp)
+            output2 = CG(output, tol=0.00005, L=1, smap=smap, mask=mask, alised_image=input)
+        temp = output2
         optimG.zero_grad()
          #if bfov: loss_G = fn(output * mask, label * mask)
-        loss_G = fn(output, label)+ 0.1*norm(output,label)
-       # loss_G = fn(input,label)+0.1*fn(output,label)
+        loss_G = fn(temp, label)
         loss_G.backward()
         optimG.step()
         loss_G_train += loss_G.item()#torch.norm(label-output)/torch.norm(label)
     with torch.no_grad():
-        for vali_direct,vali_target in two_channel_dataset_test.test_loader:
+         for vali_direct,vali_target,vali_mask in two_channel_dataset_test.test_loader:
             vali_input =  vali_direct.to(device).float()
             val_pred = netG(vali_input)
+            vali_temp = vali_input
+            vali_mask = vali_mask.to(device).float()
+            vali_smap = torch.ones(vali_input.shape).unsequeez()
+            for ii in range(6):
+                vali_output = netG(vali_input)
+                vali_output2 = CG(vali_output, tol=0.00005, L=1, smap=vali_smap, mask=vali_mask, alised_image=vali_input)
+            vali_temp = vali_output2
             vali_target = vali_target.to(device).float()    
-            val_loss = fn(val_pred, vali_target)
-
+            val_loss = fn(vali_temp, vali_target)
+         vali_g_train += val_loss.item() 
     train_loss.append(loss_G_train)
-    #vali_loss.append(val_loss.item())
+    vali_loss.append(val_loss.item())
     print('V Loss', val_loss.item())
     print(loss_G_train)
     print(epoch)
 
-    
-
 
     
-    
-#torch.save(netG.cpu(),'Unet_global_model_data_two_channel_correct.pt')
-
-
-
 
     
     
     
-np.save(os.path.join('..','MRI_descattering','two_channel_result','vali_target_4_fold_1082_2.npy'),vali_target.cpu().numpy())
-np.save(os.path.join('..','MRI_descattering','two_channel_result','vali_image_4_fold_1082_2.npy'),val_pred.cpu().numpy())
-np.save(os.path.join('..','MRI_descattering','two_channel_result','vali_noise_4_fold_1082_2.npy'),vali_input.cpu().numpy())
+    
+
+    
+    
+
+    
+    
+    
+
+#torch.save(netG.cpu(),'Unet_two_channel_model_1400_image_8accelreat_corr3.pt')
 
 
-#np.
-save(os.path.join('..','MRI_descattering','train_noise_early_datasset_0.1L1_25noisy.npy'),input.cpu().detach().numpy())
-#np.save(os.path.join('..','MRI_descattering','train_image_early_datasset_0.1L1_25noisy.npy'),output.cpu().detach().numpy())
-#np.save(os.path.join('..','MRI_descattering','train_gh_early_datasset_0.1L1_25noisy.npy'),label.cpu().detach().numpy())    
-np.save(os.path.join('..','MRI_descattering','val_gh_4_fold_data_consistance.npy'),vali_loss)
+    
 
-np.save(os.path.join('..','MRI_descattering','train_gh_data_consistance.npy'),train_loss) 
+
+np.save(os.path.join('..','MRI_descattering','two_channel_result','vali_gh_4_fold_ch1180_new_norm2.npy'),vali_target.cpu().numpy())
+
+np.save(os.path.join('..','MRI_descattering','two_channel_result','vali_image_4_fold_ch1180_new_norm2.npy'),val_pred.cpu().numpy())
+np.save(os.path.join('..','MRI_descattering','two_channel_result','vali_noise_4_fold_ch1180_new_norm2.npy'),vali_input.cpu().numpy())
+
+
+
+#np.save(os.path.join('..','MRI_descattering','two_channel_result','train_noise_1400_datasset_0.1L1_two_ch1100.npy'),input.cpu().detach().numpy())
+#np.save(os.path.join('..','MRI_descattering','two_channel_result','train_image_1400_datasset_0.1L1_two_ch1100.npy'),output.cpu().detach().numpy())
+#np.save(os.path.join('..','MRI_descattering','two_channel_result','train_gh_1400_datasset_0.1L1__two_ch1100.npy'),label.cpu().detach().numpy())    
+np.save(os.path.join('..','MRI_descattering','two_channel_result','val_gh_8_fold_loss_cg1180_loss_4acc.npy'),vali_loss)
+
+
+np.save(os.path.join('..','MRI_descattering','two_channel_result','train_gh_1180_two_2chloss_8acc.npy'),train_loss) 
+
+
+
+
+
+
+
 
 
 

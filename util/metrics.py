@@ -6,6 +6,8 @@ from math import exp
 import math
 from . import util
 from util.util import absolute
+from skimage.metrics import structural_similarity as ss
+from scipy import ndimage
 def gaussian(window_size, sigma,device):
 	gauss = torch.Tensor([exp(-(x - window_size/2)**2/float(2*sigma**2)) for x in range(window_size)]).to(device)
 	return gauss/gauss.sum()
@@ -40,11 +42,52 @@ def SSIM(img1, img2,device):
 	return ssim_map.mean()
 	
 
-def PSNR(img1, img2):
-	mse = torch.mean(torch.pow(img1 - img2, 2))*2
-	return 10*torch.log10(torch.pow(torch.max(absolute(img1,1)),2)/mse).clone().cpu().detach().numpy().item()
 
 
 def roll_2(im, n):
     x = torch.cat((im[:,:,-n:,:], im[:,:,:-n,:]), dim=2)
     return torch.cat((x[:,:,:, -n:], x[:,:,:,:-n]), dim=3)
+    
+def PSNR(img1, img2):
+    MSE = np.mean(np.abs(img1-img2)**2)
+    psnr=10*np.log10(np.max(np.abs(img1))**2/MSE)
+    return psnr
+def compute_hfen(recon: torch.Tensor,gt: torch.Tensor) -> np.ndarray:
+    '''
+    compute hfen for image
+    assume the input has the format [HW]
+    '''
+    LoG_GT     = ndimage.gaussian_laplace(np.real(gt),    sigma=1) + 1j*ndimage.gaussian_laplace(np.imag(gt),    sigma=1)
+    LoG_recon  = ndimage.gaussian_laplace(np.real(recon), sigma=1) + 1j*ndimage.gaussian_laplace(np.imag(recon), sigma=1)
+    hfens = np.linalg.norm(LoG_recon - LoG_GT)/np.linalg.norm(LoG_GT)
+    return hfens
+
+def compute_ssim(xs, ys):
+    '''
+    assume the input is a 2D tensor
+    '''
+    ssim = ss(
+            xs,
+            ys,
+            data_range=ys.max(),)
+    return np.array(ssim, dtype=np.float32)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

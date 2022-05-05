@@ -1,5 +1,6 @@
 from __future__ import print_function
 import torch
+from torch.nn import init
 import numpy as np
 from PIL import Image
 import os
@@ -331,7 +332,6 @@ def fft2(data):
     return data
 
 
-
 def ifft2(data):
     """
     Apply centered 2-dimensional Inverse Fast Fourier Transform.
@@ -347,27 +347,6 @@ def ifft2(data):
     data = ifft_new(data, 2, normalized=True)
     data = fftshift(data, dim=(-3, -2))
     return data
-
-def ifft2_mask(data,mask):
-    """
-    Apply centered 2-dimensional Inverse Fast Fourier Transform.
-    Args:
-        data (torch.Tensor): Complex valued input data containing at least 3 dimensions: dimensions
-            -3 & -2 are spatial dimensions and dimension -1 has size 2. All other dimensions are
-            assumed to be batch dimensions.
-    Returns:
-        torch.Tensor: The IFFT of the input.
-    """
-    assert data.size(-1) == 2
-    data = ifftshift(data, dim=(-3, -2))
-    data = ifft_new(data, 2, normalized=True)
-    data.roll(tuple(n//2 for n in data.shape[:2]), dims=(0,1))  # move the center frequency to the center of the image
-    if mask is not None:  # apply a sampling mask if one is supplied (used in a later question)
-        data[~mask, :] = 0
-
-    data = fftshift(data, dim=(-3, -2))
-    return data
-
 
 def imag_exp(a, dim=0):
     """Imaginary exponential, exp(ia), returns real/imag separate in dim.
@@ -476,6 +455,44 @@ def complex_sign(t, dim=0):
     signt = imag_exp(signt, dim=dim)
 
     return signt
+
+def NormalizeData2(data):
+    return data / torch.max(torch.abs(data))
+    
+def convert_2chan_into_complex(img):
+    img_real = img[0][0]
+    img_imag = img[0][1]
+    img_complex = torch.complex(img_real, img_imag)
+    return img_complex
+
+def init_weights(net, init_type='normal', init_gain=0.02):
+    def init_func(m):  # define the initialization function
+        classname = m.__class__.__name__
+        if hasattr(m, 'weight') and (classname.find('Conv') != -1 or classname.find('Linear') != -1):
+            if init_type == 'normal':
+                init.normal_(m.weight.data, 0.0, init_gain)
+            elif init_type == 'xavier':
+                init.xavier_normal_(m.weight.data, gain=init_gain)
+            elif init_type == 'kaiming':
+                init.kaiming_normal_(m.weight.data, a=0, mode='fan_in')
+            elif init_type == 'orthogonal':
+                init.orthogonal_(m.weight.data, gain=init_gain)
+            else:
+                raise NotImplementedError('initialization method [%s] is not implemented' % init_type)
+            if hasattr(m, 'bias') and m.bias is not None:
+                init.constant_(m.bias.data, 0.0)
+        elif classname.find('BatchNorm2d') != -1:  # BatchNorm Layer's weight is not a matrix; only normal distribution applies.
+            init.normal_(m.weight.data, 1.0, init_gain)
+            init.constant_(m.bias.data, 0.0)
+
+    print('initialize network with %s' % init_type)
+    net.apply(init_func)  # apply the initialization function <init_func>
+    
+    
+    
+    
+    
+    
 
 
 
