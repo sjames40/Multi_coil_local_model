@@ -79,10 +79,14 @@ def search_for_simliar_neighbor(test_image,training_dataset,metric,number_neighb
             distance =np.linalg.norm(np.abs(test_image)-np.abs(neighbor),'fro')
         elif metric == 'cos':
             distance = np.abs(np.sum(np.conj(test_image)*neighbor))/(np.linalg.norm(test_image)*np.linalg.norm(neighbor))
+        else:
+            distance = 0
         norm_matrix2.append(distance)
     if metric == 'cos':
        match_inds = np.argsort(norm_matrix2)[-number_neighbor:-1]
-    if metric == 'L1' or 'L2':
+    if metric == 'L1':
+       match_inds = np.argsort(norm_matrix2)[1:number_neighbor+1]
+    if metric == 'L2':
        match_inds = np.argsort(norm_matrix2)[1:number_neighbor+1]
     check_inds = sorted(match_inds)
     print(check_inds)
