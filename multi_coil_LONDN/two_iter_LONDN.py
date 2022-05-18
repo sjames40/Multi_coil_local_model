@@ -106,7 +106,7 @@ for number in range(2):
             PSNR_rec = PSNR(np.abs(local_gt2),np.abs(local_rec2))
         print(PSNR_rec)
     check_image_set =[]
-    data_select,mask_data_select,check_image_set = tp.make_dataset_with_output(local_rec2,1074,tp.image_gt_space_data,tp.kspace_data,25)
+    data_select,mask_data_select,check_image_set = tp.make_dataset_with_output(local_rec2,1074,tp.image_gt_space_data,tp.kspace_data,25,'Cos')
     train_dataset = tp.nyumultidataset(data_select,mask_data_select)
     train_loader_new = torch.utils.data.DataLoader(train_dataset, batch_size=1,shuffle=True)
     train_loader_initial = train_loader_new
