@@ -39,7 +39,7 @@ fn = nn.MSELoss().to(device)
 optimG = torch.optim.Adam(netG.parameters(), lr=learning_rate)
 train_loss = []
 vali_loss = []
-
+scheduler = torch.optim.lr_scheduler.MultiStepLR(optimG, milestones=[50,100], gamma=0.6)
 
 def CG(output, tol ,L, smap, mask, alised_image):
     return networks.CG.apply(output, tol ,L, smap, mask, alised_image)
