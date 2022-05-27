@@ -38,7 +38,7 @@ def CG(output, tol ,L, smap, mask, alised_image):
 PSNR_list =[]
 train_loss= []
 vali_loss =[]
-scheduler = torch.optim.lr_scheduler.MultiStepLR(optimG, milestones=[100,200], gamma=0.5)
+scheduler = torch.optim.lr_scheduler.MultiStepLR(optimG, milestones=[100,200], gamma=0.65)
 
 for epoch in range(epoch):
     loss_G_train = 0
