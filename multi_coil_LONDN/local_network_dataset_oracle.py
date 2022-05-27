@@ -99,8 +99,6 @@ def make_dataset_with_output(output,index,number_neigh,train_data_path,metric):
         mask_data_set_train_data_select = mask_data_set_train[(match_inds[b])]
         mask_data_select.append(mask_data_set_train_data_select)                
     return data_select,mask_data_select
-
-data_select,mask_data_select = make_dataset_with_output(image_test_data[number],1078,number_of_neighbor,image_space_data,metric ='l1')
 number = 3
 number_of_neighbor =10
 
@@ -108,7 +106,9 @@ vali_data1 = []
 mask_vali = []
 
 
-index = 1078                
+index = len(kspace_array)[-10:][0] 
+data_select,mask_data_select = make_dataset_with_output(test_image,index,image_train_data,kspace_data,number_of_neighbor,'L1')
+              
 kspace_file_vali = file_list[index]
 kspace_vali_data_from_file = np.load(os.path.join(Kspace_data_name_1400,kspace_file_vali),'r')
 vali_data1.append(kspace_vali_data_from_file)

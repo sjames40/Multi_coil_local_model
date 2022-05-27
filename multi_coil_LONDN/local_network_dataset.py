@@ -62,7 +62,7 @@ mask_array_test = sorted(mask_array_test)
 
 # make the data list for training noisy image , test noisy image and the specific mask 1081 
 image_test_data = make_data_list(image_test_name,image_test_array)# test four fold
-image_test_gt_data = make_data_list(image_test_gt_name,image_test_gt_array)# test gt image
+image_train_data = make_data_list(image_data_name,image_space_array)# train four fold
 mask_data_set_train = make_data_list(mask_data_name,mask_array)
 mask_data_set_test = make_data_list(mask_data_name_test,mask_array_test)# load mask
 
@@ -79,19 +79,15 @@ def search_for_simliar_neighbor(test_image,training_dataset,metric,number_neighb
             distance =np.linalg.norm(np.abs(test_image)-np.abs(neighbor),'fro')
         elif metric == 'cos':
             distance = np.abs(np.sum(np.conj(test_image)*neighbor))/(np.linalg.norm(test_image)*np.linalg.norm(neighbor))
-        else:
-            distance = 0
         norm_matrix2.append(distance)
     if metric == 'cos':
        match_inds = np.argsort(norm_matrix2)[-number_neighbor:-1]
-    if metric == 'L1':
-       match_inds = np.argsort(norm_matrix2)[1:number_neighbor+1]
-    if metric == 'L2':
+    if metric == 'L1' or 'L2':
        match_inds = np.argsort(norm_matrix2)[1:number_neighbor+1]
     check_inds = sorted(match_inds)
     print(check_inds)
     return check_inds
-def make_dataset_with_output(output,index,number_neigh,train_data_path,metric):
+def make_dataset_with_output(output,index,dataset,kspace_file,number_neigh,metric)::
     data_select = []
     mask_data_select =[]
     match_inds = search_for_simliar_neighbor(output,train_data_path,metric,number_neigh)
@@ -102,17 +98,19 @@ def make_dataset_with_output(output,index,number_neigh,train_data_path,metric):
         mask_data_select.append(mask_data_set_train_data_select)                
     return data_select,mask_data_select
 
-data_select,mask_data_select = make_dataset_with_output(image_test_data[number],1078,number_of_neighbor,image_data_name,metric)
+index = len(kspace_array)[-10:][0]
 number = 3
-number_of_neighbor =10
+number_of_neighbor =30
+data_select,mask_data_select = make_dataset_with_output(test_image,index,image_train_data,kspace_data,number_of_neighbor,'L1')
+
 
 vali_data1 = []
 mask_vali = []
 
 
-index = 1078                
-kspace_file_vali = file_list[index]
-kspace_vali_data_from_file = np.load(os.path.join(Kspace_data_name_1400,kspace_file_vali),'r')
+                
+kspace_file_vali = kspace_array[index]
+kspace_vali_data_from_file = np.load(os.path.join(Kspace_data_name,kspace_file_vali),'r')
 vali_data1.append(kspace_vali_data_from_file)
 mask_data_vali_select = mask_data_set_test[number]
 mask_vali.append(mask_data_vali_select)
