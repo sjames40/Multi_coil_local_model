@@ -11,7 +11,7 @@ Transactions on Medical Imaging http://doi.org/10.1109/TMI.2021.3093770; [arXiv
 preprint arXiv:2104.05028.](https://arxiv.org/abs/2104.05028)
 
 The code is made up of three components: \* single coil two channel study \*,\*
-multi coil two channel study \*, and \*multi coil two channel model\*(with
+multi coil two channel global study \*, and \*multi coil two channel local model\*(with
 PyTorch \> 1.7.0). \* Additionally, we used
 [BART](https://mrirecon.github.io/bart/) to generate the dataset.
 
