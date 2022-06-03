@@ -107,10 +107,10 @@ mask_vali = []
 
 
 index = len(kspace_array)[-10:][0] 
-data_select,mask_data_select = make_dataset_with_output(test_image,index,image_train_data,kspace_data,number_of_neighbor,'L1')
+data_select,mask_data_select = make_dataset_with_output(test_image,index,image_gt_space_data,kspace_data,number_of_neighbor,'L1')
               
 kspace_file_vali = file_list[index]
-kspace_vali_data_from_file = np.load(os.path.join(Kspace_data_name_1400,kspace_file_vali),'r')
+kspace_vali_data_from_file = np.load(os.path.join(Kspace_data_name,kspace_file_vali),'r')
 vali_data1.append(kspace_vali_data_from_file)
 mask_data_vali_select = mask_data_set_test[number]
 mask_vali.append(mask_data_vali_select)
