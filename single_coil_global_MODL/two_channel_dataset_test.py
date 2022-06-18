@@ -121,11 +121,7 @@ test_data_paths = kspace_data[np.int(num_train):np.int(num_train)+10]
 test_dataset = nyumultidataset(test_data_paths)
 test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=2,shuffle=True)
 
-#for direct, target in train_loader:
-    #np.save(os.path.join('..','MRI_descattering','Test_image','1181_simliar_neig_2channel.npy'),direct.detach().numpy())
-#    np.save(os.path.join('..','MRI_descattering','Test_image','1181_similiar_neigh_2channel.npy'),target.detach().numpy())
 
-    
     
 
     
