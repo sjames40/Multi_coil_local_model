@@ -43,3 +43,5 @@ training.
 
 The file `requirements.txt` denotes related Python packages.
 ------------------------------------------------------------
+Data avaliable on https://www.dropbox.com/scl/fi/801dxovhbkp2bkl2krz5x/NEW_KSPACE.zip?rlkey=4u3b32f6c4pfujsv3kp7z5bdk&st=hwe9thrv&dl=0
+just put the data on the your own dataset on the Kspace_data_name= '/mnt/DataA/NEW_KSPACE' and make the image space image based on the kspace data.
