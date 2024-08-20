@@ -1,4 +1,4 @@
-MRI local and global with model recon
+MRI global model recon
 =====================================
 
 Code for testing and reproduicing results for MRI local study project:
@@ -17,6 +17,10 @@ PyTorch \> 1.7.0). \* Additionally, we used
 
 MRI local learning
 ------------------
+S. Liang, A. Lahiri and S. Ravishankar, "Adaptive 
+Local Neighborhood-based Neural Networks for MR Image Reconstruction from Undersampled Data," 
+in IEEE Transactions on Computational Imaging, doi: 10.1109/TCI.2024.3394770.
+[https://ieeexplore.ieee.org/abstract/document/10510040]
 
 make_two_channel_dataset specifies and show how to make the two channel dataset
 based on the modification form https://github.com/JeffFessler/BLIPSrecon
