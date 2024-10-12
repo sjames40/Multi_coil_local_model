@@ -1,18 +1,21 @@
 MRI global model recon
 =====================================
 
-Code for testing and reproduicing results for MRI local study project:
+Code for testing and reproducing results for MRI local study project:
 
-Modl and blinps code according to the following paper
+Modl and BLIPS code according to the following paper
 
 Anish Lahiri, Guanhua Wang, Sai Ravishankar, Jeffrey A. Fessler, (2021). "Blind
 Primed Supervised (BLIPS) Learning for MR Image Reconstruction." IEEE
 Transactions on Medical Imaging http://doi.org/10.1109/TMI.2021.3093770; [arXiv
 preprint arXiv:2104.05028.](https://arxiv.org/abs/2104.05028)
 
-The code is made up of three components: \* single coil two channel study \*,\*
-multi coil two channel global study \*, and \*multi coil two channel local model\*(with
-PyTorch \> 1.7.0). \* Additionally, we used
+The code is made up of three components: 
+1. single coil two channel study2
+2. multi coil two channel global study
+3. multi coil two channel local model (with PyTorch \> 1.7.0).
+
+Additionally, we used
 [BART](https://mrirecon.github.io/bart/) to generate the dataset.
 
 MRI local learning
@@ -20,30 +23,21 @@ MRI local learning
 S. Liang, A. Lahiri and S. Ravishankar, "Adaptive 
 Local Neighborhood-based Neural Networks for MR Image Reconstruction from Undersampled Data," 
 in IEEE Transactions on Computational Imaging, doi: 10.1109/TCI.2024.3394770.
-[https://ieeexplore.ieee.org/abstract/document/10510040]
+https://ieeexplore.ieee.org/abstract/document/10510040
 
-make_two_channel_dataset specifies and show how to make the two channel dataset
-based on the modification form https://github.com/JeffFessler/BLIPSrecon
+**Directory overview** (under `multi_coil_LONDN/`)
 
- 
-
-global dataset  specifies the data loader for MRI image loading from
+- `make_two_channel_dataset.py` specifies and shows how to make the two channel dataset
+based on the modification from https://github.com/JeffFessler/BLIPSrecon
+- `global_network_dataset.py`  specifies the data loader for MRI image loading from
 multicoil MR measurements for global case.
-
-local network dataset and local netowrk dataset oracle specifies the data loader for MRI image loading from
-multicoil MR measurements for noise local case and oracle local case.
-
-
-train local unet  can be used for local  model training and testing
+- `local_network_dataset.py` and `local_network_dataset_oracle.py` specifies the data loader for MRI image loading from multicoil MR measurements for noise local case and oracle local case.
+- `train_local_unet.py`  can be used for local model training and testing
 reconstruction from undersampled mulit-coil k-space measurements using UNet
 training.
-
-transfer learning local network  can be used for local  model training and testing
+- `transfer_learning_local_network.py`  can be used for local  model training and testing
 reconstruction from undersampled mulit-coil k-space measurements using DIDN
 training.
-
- 
--
 
 The file `requirements.txt` denotes related Python packages.
 ------------------------------------------------------------
